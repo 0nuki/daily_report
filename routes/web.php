@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\DailyReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -21,12 +22,7 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
     
-    // 日報機能（後で実装）
-    Route::get('/daily-reports', function () {
-        return view('daily-reports.index');
-    })->name('daily-reports.index');
-    
-    Route::get('/daily-reports/create', function () {
-        return view('daily-reports.create');
-    })->name('daily-reports.create');
+    // 日報機能
+    // Route::post('/daily-reports/autosave', [DailyReportController::class, 'autosave'])->name('daily-reports.autosave');
+    Route::resource('daily-reports', DailyReportController::class);
 });
