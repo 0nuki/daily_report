@@ -26,7 +26,7 @@ class DailyReportController extends Controller
      */
     public function create()
     {
-        return view('daily-reports.create');
+        return view('daily-reports.create-livewire');
     }
 
     /**
