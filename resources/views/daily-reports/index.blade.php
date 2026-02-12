@@ -13,52 +13,28 @@
             </div>
 
             @if($reports->count() > 0)
-                <div class="card">
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>日付</th>
-                                        <th>案件名/顧客名</th>
-                                        <th>作業時間</th>
-                                        <th>作業内容</th>
-                                        <th class="text-end">操作</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($reports as $report)
-                                        <tr>
-                                            <td>{{ $report->report_date->format('Y年m月d日') }}</td>
-                                            <td>{{ $report->project_name }}</td>
-                                            <td>{{ $report->work_hours }}分</td>
-                                            <td>
-                                                <div class="text-truncate" style="max-width: 300px;">
-                                                    {{ Str::limit($report->work_content, 50) }}
-                                                </div>
-                                            </td>
-                                            <td class="text-end">
-                                                <a href="{{ route('daily-reports.show', $report) }}" class="btn btn-sm btn-info">
-                                                    <i class="bi bi-eye"></i>
-                                                </a>
-                                                <a href="{{ route('daily-reports.edit', $report) }}" class="btn btn-sm btn-warning">
-                                                    <i class="bi bi-pencil"></i>
-                                                </a>
-                                                <form action="{{ route('daily-reports.destroy', $report) }}" method="POST" class="d-inline" onsubmit="return confirm('本当に削除しますか？');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-danger">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                @foreach($reports as $date => $dailyReports)
+                    <div class="card mb-3">
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">{{ \Carbon\Carbon::parse($date)->format('Y年m月d日') }}</h5>
+                            <div>
+                                <a href="{{ route('daily-reports.show', $dailyReports->first()->id) }}" class="btn btn-sm btn-info">
+                                    <i class="bi bi-eye"></i> 詳細
+                                </a>
+                                <a href="{{ route('daily-reports.edit', $dailyReports->first()->id) }}" class="btn btn-sm btn-warning">
+                                    <i class="bi bi-pencil"></i> 編集
+                                </a>
+                                <form action="{{ route('daily-reports.destroy', $dailyReports->first()->id) }}" method="POST" class="d-inline" onsubmit="return confirm('この日付の日報を削除しますか？');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class="bi bi-trash"></i> 削除
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
-                </div>
+                @endforeach
 
                 <div class="mt-4">
                     {{ $reports->links() }}

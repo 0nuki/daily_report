@@ -13,10 +13,29 @@ class DailyReportController extends Controller
      */
     public function index()
     {
-        $reports = DailyReport::where('user_id', Auth::id())
+        $allReports = DailyReport::where('user_id', Auth::id())
             ->orderBy('report_date', 'desc')
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->get();
+
+        // 日付ごとにグループ化
+        $groupedReports = $allReports->groupBy('report_date');
+        
+        // ページネーション用に配列に変換
+        $page = request()->get('page', 1);
+        $perPage = 10;
+        $total = $groupedReports->count();
+        
+        // ページネーション用にスライス（キーを保持）
+        $items = $groupedReports->slice(($page - 1) * $perPage, $perPage);
+        
+        $reports = new \Illuminate\Pagination\LengthAwarePaginator(
+            $items,
+            $total,
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
 
         return view('daily-reports.index', compact('reports'));
     }
@@ -92,7 +111,13 @@ class DailyReportController extends Controller
             abort(403);
         }
 
-        return view('daily-reports.show', compact('dailyReport'));
+        // 同じ日付の全案件を取得
+        $dailyReports = DailyReport::where('user_id', Auth::id())
+            ->where('report_date', $dailyReport->report_date)
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        return view('daily-reports.show', compact('dailyReports', 'dailyReport'));
     }
 
     /**
@@ -105,7 +130,7 @@ class DailyReportController extends Controller
             abort(403);
         }
 
-        return view('daily-reports.edit', compact('dailyReport'));
+        return view('daily-reports.edit-livewire', compact('dailyReport'));
     }
 
     /**
@@ -162,7 +187,10 @@ class DailyReportController extends Controller
             abort(403);
         }
 
-        $dailyReport->delete();
+        // 同じ日付の全案件を削除
+        $deletedCount = DailyReport::where('user_id', Auth::id())
+            ->where('report_date', $dailyReport->report_date)
+            ->delete();
 
         return redirect()->route('daily-reports.index')
             ->with('success', '日報を削除しました。');
