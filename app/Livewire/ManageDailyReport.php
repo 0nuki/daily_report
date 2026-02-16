@@ -6,11 +6,13 @@ use App\Models\DailyReport;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
-class CreateDailyReport extends Component
+class ManageDailyReport extends Component
 {
     public $report_date;
     public $projects = [];
     public $notes = '';
+    public $dailyReportId = null;
+    public $isEditMode = false;
 
     protected function rules()
     {
@@ -41,15 +43,60 @@ class CreateDailyReport extends Component
         ];
     }
 
-    public function mount()
+    public function mount($dailyReportId = null)
     {
-        $this->report_date = now()->format('Y-m-d');
-        $this->addProject();
+        if ($dailyReportId) {
+            // 編集モード
+            $this->isEditMode = true;
+            $this->dailyReportId = $dailyReportId;
+            
+            // idから日報を取得
+            $dailyReport = DailyReport::findOrFail($dailyReportId);
+            
+            // 自分の日報のみ編集可能
+            if ($dailyReport->user_id !== Auth::id()) {
+                abort(403);
+            }
+            
+            // 同じ日付の全案件を取得
+            $dailyReports = DailyReport::where('user_id', Auth::id())
+                ->where('report_date', $dailyReport->report_date)
+                ->orderBy('created_at', 'asc')
+                ->get();
+            
+            $this->report_date = $dailyReport->report_date->format('Y-m-d');
+            $this->notes = $dailyReport->notes ?? '';
+            
+            foreach ($dailyReports as $report) {
+                $this->projects[] = [
+                    'id' => $report->id,
+                    'project_name' => $report->project_name,
+                    'start_time' => $report->start_time ? \Carbon\Carbon::parse($report->start_time)->format('H:i') : '',
+                    'end_time' => $report->end_time ? \Carbon\Carbon::parse($report->end_time)->format('H:i') : '',
+                    'work_hours' => $report->work_hours ?? 0,
+                    'work_content' => $report->work_content,
+                ];
+            }
+        } else {
+            // 作成モード
+            $this->isEditMode = false;
+            $this->report_date = now()->format('Y-m-d');
+            // 最初の案件に現在時間を設定
+            $this->projects[] = [
+                'id' => null,
+                'project_name' => '',
+                'start_time' => now()->format('H:i'),
+                'end_time' => '',
+                'work_hours' => 0,
+                'work_content' => '',
+            ];
+        }
     }
 
     public function addProject()
     {
         $this->projects[] = [
+            'id' => null,
             'project_name' => '',
             'start_time' => '',
             'end_time' => '',
@@ -92,6 +139,15 @@ class CreateDailyReport extends Component
     {
         $validated = $this->validate();
 
+        if ($this->isEditMode) {
+            // 編集モード：元の日付の全日報を削除
+            $dailyReport = DailyReport::findOrFail($this->dailyReportId);
+            DailyReport::where('user_id', Auth::id())
+                ->where('report_date', $dailyReport->report_date)
+                ->delete();
+        }
+
+        // 新しい日報を作成
         $count = 0;
         foreach ($validated['projects'] as $project) {
             // 作業時間を計算（分単位）
@@ -121,13 +177,17 @@ class CreateDailyReport extends Component
             $count++;
         }
 
-        session()->flash('success', "{$count}件の日報を作成しました。");
+        $message = $this->isEditMode 
+            ? '日報を更新しました。' 
+            : "{$count}件の日報を作成しました。";
+        
+        session()->flash('success', $message);
         
         return redirect()->route('daily-reports.index');
     }
 
     public function render()
     {
-        return view('livewire.create-daily-report');
+        return view('livewire.manage-daily-report');
     }
 }

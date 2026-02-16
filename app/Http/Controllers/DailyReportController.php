@@ -45,7 +45,7 @@ class DailyReportController extends Controller
      */
     public function create()
     {
-        return view('daily-reports.create-livewire');
+        return view('daily-reports.manage-livewire');
     }
 
     /**
@@ -130,7 +130,7 @@ class DailyReportController extends Controller
             abort(403);
         }
 
-        return view('daily-reports.edit-livewire', compact('dailyReport'));
+        return view('daily-reports.manage-livewire', compact('dailyReport'));
     }
 
     /**

@@ -2,7 +2,7 @@
     <div class="row">
         <div class="col-lg-10 mx-auto">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>日報作成</h2>
+                <h2>{{ $isEditMode ? '日報編集' : '日報作成' }}</h2>
                 <a href="{{ route('daily-reports.index') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left"></i> 戻る
                 </a>
@@ -139,10 +139,10 @@
                             @enderror
                         </div>
 
-                        <!-- 登録ボタン -->
+                        <!-- 送信ボタン -->
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-save"></i> 登録
+                                <i class="bi bi-save"></i> {{ $isEditMode ? '更新' : '登録' }}
                             </button>
                         </div>
                     </form>
