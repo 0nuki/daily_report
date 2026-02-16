@@ -28,7 +28,7 @@
                             
                             <div class="mb-3">
                                 <h6 class="text-muted mb-2">案件名/顧客名</h6>
-                                <p>{{ $report->project_name }}</p>
+                                <p>{{ $report->project->name ?? '（案件情報なし）' }}</p>
                             </div>
 
                             @if($report->start_time || $report->end_time)

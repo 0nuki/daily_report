@@ -13,7 +13,8 @@ class DailyReportController extends Controller
      */
     public function index()
     {
-        $allReports = DailyReport::where('user_id', Auth::id())
+        $allReports = DailyReport::with('project')
+            ->where('user_id', Auth::id())
             ->orderBy('report_date', 'desc')
             ->orderBy('created_at', 'desc')
             ->get();
@@ -112,7 +113,8 @@ class DailyReportController extends Controller
         }
 
         // 同じ日付の全案件を取得
-        $dailyReports = DailyReport::where('user_id', Auth::id())
+        $dailyReports = DailyReport::with('project')
+            ->where('user_id', Auth::id())
             ->where('report_date', $dailyReport->report_date)
             ->orderBy('created_at', 'asc')
             ->get();

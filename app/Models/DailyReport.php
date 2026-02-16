@@ -12,7 +12,7 @@ class DailyReport extends Model
         'report_date',
         'start_time',
         'end_time',
-        'project_name',
+        'project_id',
         'work_hours',
         'work_content',
         'notes',
@@ -29,5 +29,13 @@ class DailyReport extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * このレポートが属するプロジェクト
+     */
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
     }
 }

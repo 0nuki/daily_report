@@ -47,13 +47,47 @@
                                         <!-- 案件名/顧客名 -->
                                         <div class="mb-3">
                                             <label class="form-label">案件名/顧客名 <span class="text-danger">*</span></label>
+                                            
+                                            <!-- 既存の案件を選択 -->
+                                            @if(count($availableProjects) > 0)
+                                                <!-- 検索用入力フィールド -->
+                                                <input 
+                                                    type="text" 
+                                                    class="form-control mb-2" 
+                                                    wire:model.live="projects.{{ $index }}.project_search"
+                                                    placeholder="案件名で検索..."
+                                                >
+                                                
+                                                @php
+                                                    $filteredProjects = $this->getFilteredProjects($index);
+                                                @endphp
+                                                
+                                                <select 
+                                                    class="form-select mb-2 @error('projects.'.$index.'.project_id') is-invalid @enderror" 
+                                                    wire:model="projects.{{ $index }}.project_id"
+                                                >
+                                                    <option value="">-- 既存の案件を選択 --</option>
+                                                    @forelse($filteredProjects as $availableProject)
+                                                        <option value="{{ $availableProject->id }}">{{ $availableProject->name }}</option>
+                                                    @empty
+                                                        <option value="" disabled>検索結果なし</option>
+                                                    @endforelse
+                                                </select>
+                                                @error('projects.'.$index.'.project_id')
+                                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                @enderror
+                                                
+                                                <div class="text-center text-muted small mb-2">または</div>
+                                            @endif
+                                            
+                                            <!-- 新規案件名を入力 -->
                                             <input 
                                                 type="text" 
-                                                class="form-control @error('projects.'.$index.'.project_name') is-invalid @enderror" 
-                                                wire:model="projects.{{ $index }}.project_name"
-                                                required
+                                                class="form-control @error('projects.'.$index.'.new_project_name') is-invalid @enderror" 
+                                                wire:model="projects.{{ $index }}.new_project_name"
+                                                placeholder="新しい案件名を入力"
                                             >
-                                            @error('projects.'.$index.'.project_name')
+                                            @error('projects.'.$index.'.new_project_name')
                                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                                             @enderror
                                         </div>
